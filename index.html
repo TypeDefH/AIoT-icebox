@@ -92,7 +92,7 @@
       <div class="bg-white rounded-xl p-6 card-shadow border-t-4 border-primary relative">
         <span class="realtime-badge">实时</span>
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-gray-600 font-medium">设备俯角</h3>
+          <h3 class="text-gray-600 font-medium">设备俯仰角</h3>
           <i class="fa fa-arrow-up text-primary text-xl"></i>
         </div>
         <div class="text-3xl font-bold text-gray-800 data-value" id="pitch">--°</div>
@@ -102,7 +102,7 @@
       <div class="bg-white rounded-xl p-6 card-shadow border-t-4 border-info relative">
         <span class="realtime-badge">实时</span>
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-gray-600 font-medium">设备仰角</h3>
+          <h3 class="text-gray-600 font-medium">设备翻滚角</h3>
           <i class="fa fa-arrow-down text-info text-xl"></i>
         </div>
         <div class="text-3xl font-bold text-gray-800 data-value" id="roll">--°</div>
@@ -160,11 +160,12 @@
       <i class="fa fa-history text-primary mr-3 text-xl"></i>
       <h2 class="text-xl font-semibold text-gray-800">历史数据分析</h2>
     </div>
-    <div class="flex flex-wrap gap-3 mb-6">
-      <button class="history-tab px-4 py-2 rounded-lg bg-primary text-white" data-type="temperature" data-name="温度" data-unit="°C" data-color="#FF9F43">温度</button>
-      <button class="history-tab px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-type="humidity" data-name="湿度" data-unit="%" data-color="#4A90E2">湿度</button>
-      <button class="history-tab px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-type="angle" data-name="设备角度" data-unit="°" data-color="#165DFF">设备角度</button>
-    </div>
+  <div class="flex flex-wrap gap-3 mb-6">
+    <button class="history-tab px-4 py-2 rounded-lg" data-type="temp" data-name="温度" data-unit="°C" data-color="#FF9F43">温度</button>
+    <button class="history-tab px-4 py-2 rounded-lg" data-type="humi" data-name="湿度" data-unit="%" data-color="#4A90E2">湿度</button>
+    <button class="history-tab px-4 py-2 rounded-lg" data-type="pitch" data-name="俯仰角" data-unit="°" data-color="#165DFF">俯仰角</button>
+    <button class="history-tab px-4 py-2 rounded-lg" data-type="roll" data-name="翻滚角" data-unit="°" data-color="#00D1DE">翻滚角</button>
+  </div>
     <div class="bg-white rounded-xl p-6 card-shadow">
       <div class="flex justify-center items-center" id="historyChartLoader" style="height: 300px;">
         <div class="text-center">
@@ -189,7 +190,7 @@ const API_CONFIG = {
     url: "https://iot-api.heclouds.com/thingmodel/query-device-property",
     headers: {
       "Accept": "application/json, text/plain, */*",
-      "authorization": "version=2022-05-01&res=userid%2F421964&et=1766320313&method=sha1&sign=QpUFtTIPE04bZeNY5fS1dvb2iQQ%3D"
+      "authorization": "version=2022-05-01&res=userid%2F421964&et=1767948185&method=sha1&sign=ldLUMlClVSkDQFj7r%2BhHrRXtp1c%3D"
     },
     query: { product_id: "tnOp9vX0Ge", device_name: "test" },
     updateInterval: 30000
@@ -205,27 +206,19 @@ function updateConnectionStatus(isConnected, message="") {
   }
 }
 
+const SERVER_URL = "http://localhost:3000/api";
+
 async function fetchRealtimeData(){
-  try{
-    updateConnectionStatus(false,"正在获取实时数据");
-    const url = new URL(API_CONFIG.realtime.url);
-    Object.entries(API_CONFIG.realtime.query).forEach(([k,v])=>url.searchParams.append(k,v));
-    console.log("请求URL:", url.toString());
-    console.log("请求Headers:", API_CONFIG.realtime.headers);
-    const res = await fetch(url, { headers: API_CONFIG.realtime.headers });
-    console.log("HTTP状态:", res.status, res.statusText);
-    if(!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+  try {
+    updateConnectionStatus(false, "同步中...");
+    const res = await fetch(`${SERVER_URL}/data`); // 改为请求本地
     const data = await res.json();
-    console.log("返回数据:", data);
-    if(data.code === 0 && data.data && data.data.length > 0){
+    if(data.code === 0 && data.data) {
       updateConnectionStatus(true);
       updateUI(data.data);
-    } else {
-      throw new Error(data.msg || "获取实时数据失败");
     }
-  } catch(e){
-    console.error("获取实时数据失败", e);
-    updateConnectionStatus(false,"数据获取失败: " + e.message);
+  } catch(e) {
+    updateConnectionStatus(false, "后端连接失败");
   }
 }
 
@@ -261,42 +254,31 @@ function updateUI(dataList){
 // 控制开关
 document.getElementById("deviceSwitchToggle").addEventListener("click", async ()=>{
   const toggle = document.getElementById("deviceSwitchToggle");
-  const switchStatus = document.getElementById("deviceSwitchStatus");
-  toggle.classList.toggle("on");
-  toggle.classList.toggle("off");
-  const isOn = toggle.classList.contains("on");
-  switchStatus.textContent = isOn?"开启":"关闭";
-  // 调用 OneNET 控制接口
-  const body = JSON.stringify({ params:{ relay: isOn?1:0 }});
-  try{
-    await fetch("https://iot-api.heclouds.com/thingmodel/updatadeviceproperty",{
-      method:"POST",
-      headers: {
-        "Content-Type":"application/json",
-        "authorization": API_CONFIG.realtime.headers.authorization
-      },
-      body: body
+  const isOn = !toggle.classList.contains("on"); // 获取切换后的期望状态
+  
+  try {
+    const res = await fetch(`${SERVER_URL}/control`, {
+      method: "POST",
+      body: JSON.stringify({ relay: isOn ? 1 : 0 })
     });
-  } catch(e){ console.error("开关控制失败",e);}
+    const result = await res.json();
+    if(result.code === 0) fetchRealtimeData(); // 成功后刷新数据
+  } catch(e) { console.error("控制失败", e); }
 });
 
 // 设置温度
 document.getElementById("setTempBtn").addEventListener("click", async ()=>{
   const val = parseFloat(document.getElementById("tempSetInput").value);
-  if(val>=16 && val<=30){
-    alert("已设置温度为："+val+"°C");
-    const body = JSON.stringify({ params:{ temp: val }});
-    try{
-      await fetch("https://iot-api.heclouds.com/thingmodel/updatadeviceproperty",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "authorization": API_CONFIG.realtime.headers.authorization
-        },
-        body: body
+  if(val >= 16 && val <= 30){
+    try {
+      const res = await fetch(`${SERVER_URL}/control`, {
+        method: "POST",
+        body: JSON.stringify({ temp: val })
       });
-    } catch(e){ console.error("设置温度失败",e);}
-  } else alert("请输入16~30°C的温度");
+      const result = await res.json();
+      if(result.code === 0) alert("温度设置成功");
+    } catch(e) { alert("设置失败"); }
+  } else alert("请输入16~30°C");
 });
 
 let historyChart = null;
@@ -313,31 +295,54 @@ function initHistoryChart(labels,data,label,color){
 }
 
 // 历史数据切换（模拟）
-document.querySelectorAll(".history-tab").forEach(tab=>{
-  tab.addEventListener("click", ()=>{
-    document.querySelectorAll(".history-tab").forEach(t=>{ t.classList.remove("bg-primary","text-white"); t.classList.add("bg-gray-200","text-gray-700");});
-    tab.classList.remove("bg-gray-200","text-gray-700"); tab.classList.add("bg-primary","text-white");
-    const type = tab.dataset.type;
+document.querySelectorAll(".history-tab").forEach(tab => {
+  tab.addEventListener("click", async () => {
+    // 1. 切换按钮样式
+    document.querySelectorAll(".history-tab").forEach(t => { 
+        t.classList.remove("bg-primary", "text-white"); 
+        t.classList.add("bg-gray-200", "text-gray-700");
+    });
+    tab.classList.remove("bg-gray-200", "text-gray-700"); 
+    tab.classList.add("bg-primary", "text-white");
+
+    // 2. 获取参数
+    const type = tab.dataset.type; // 对应 html 中的 temp, humi, pitch 等
     const name = tab.dataset.name;
     const unit = tab.dataset.unit;
     const color = tab.dataset.color;
 
-    const labels = [], data=[];
-    const now = new Date();
-    for(let i=10;i>=0;i--){
-      const time = new Date(now.getTime()-i*30*60*1000);
-      labels.push(time.getHours().toString().padStart(2,"0")+":"+time.getMinutes().toString().padStart(2,"0"));
-      const base = type==="temperature"?22:type==="humidity"?72:30;
-      const fluct=Math.random()*2-1;
-      data.push(base+fluct);
+    // 显示加载动画
+    document.getElementById("historyChartLoader").style.display = "flex";
+    document.getElementById("historyChart").style.display = "none";
+
+    try {
+      // 3. 请求后端接口
+      const res = await fetch(`${SERVER_URL}/history?identifier=${type}`);
+      const result = await res.json();
+
+      if (result.code === 0 && result.data.list) {
+        // 4. 解析数据：OneNET返回的是倒序，需要 reverse() 变成时间正序
+        const historyList = result.data.list.reverse();
+        const labels = historyList.map(item => {
+          const d = new Date(item.time);
+          return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+        });
+        const values = historyList.map(item => parseFloat(item.value));
+
+        // 5. 更新图表
+        initHistoryChart(labels, values, `${name}${unit ? "(" + unit + ")" : ""}`, color);
+      } else {
+        alert("暂无历史记录");
+      }
+    } catch (e) {
+      console.error("加载历史数据失败", e);
     }
-    initHistoryChart(labels,data,`${name}${unit? "("+unit+")":""}`,color);
   });
 });
 
 window.addEventListener("load",()=>{
   fetchRealtimeData();
-  setInterval(fetchRealtimeData, API_CONFIG.realtime.updateInterval);
+  setInterval(fetchRealtimeData, 30000);
   setTimeout(()=>{ document.querySelector('.history-tab[data-type="temperature"]').click()},500);
 });
 </script>
