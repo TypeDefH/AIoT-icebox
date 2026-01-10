@@ -96,7 +96,14 @@ const server = http.createServer(async (req, res) => {
 });
 
 // 适配 Zeabur 端口
+<<<<<<< HEAD
 const PORT = process.env.PORT || 3000; 
 server.listen(PORT, "0.0.0.0", () => {
     console.log(`Server started on port ${PORT}`);
 });
+=======
+const PORT = process.env.PORT || 8080; 
+server.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server started on port ${PORT}`);
+});
+>>>>>>> 40037e1ba26181cfaf1a20c561a46192b10cb39a
