@@ -110,7 +110,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 // 使用 8080 端口，这通常在 Zeabur 等平台上更稳定，或者使用系统环境变量
-const PORT = process.env.PORT || 8080; 
+const PORT = process.env.PORT || 3000; 
 server.listen(PORT, "0.0.0.0", () => {
     console.log(`✅ 服务启动成功，监听端口: ${PORT}`);
 });
