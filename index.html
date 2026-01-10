@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -34,10 +33,8 @@
       .btn-toggle.on::after { @apply transform translate-x-7; }
       .btn-toggle.off { @apply bg-gray-300; }
       .history-tab { @apply transition-all duration-300 ease-in-out cursor-pointer; }
-      .data-value { @apply transition-all duration-1000 ease-out; }
       .section-fade { @apply opacity-0 translate-y-4 animate-[fadeInUp_0.6s_ease-out_forwards]; }
       .realtime-badge { @apply absolute top-3 right-3 px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary; }
-      .simulated-badge { @apply absolute top-3 right-3 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-500; }
       @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
       @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.6;} }
       .pulse-animation { animation: pulse 2s infinite; }
@@ -62,119 +59,108 @@
 </header>
 
 <main class="container mx-auto px-4 py-10">
-  <!-- 实时数据展示 -->
   <section class="mb-14 section-fade" style="animation-delay: 0.1s">
     <div class="flex items-center mb-6">
       <i class="fa fa-dashboard text-primary mr-3 text-xl"></i>
       <h2 class="text-xl font-semibold text-gray-800">实时数据</h2>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <!-- 温度 -->
       <div class="bg-white rounded-xl p-6 card-shadow border-t-4 border-warning relative">
         <span class="realtime-badge">实时</span>
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-gray-600 font-medium">温度</h3>
           <i class="fa fa-thermometer-half text-warning text-xl"></i>
         </div>
-        <div class="text-3xl font-bold text-gray-800 data-value" id="temperature">--°C</div>
+        <div class="text-3xl font-bold text-gray-800" id="temperature">--°C</div>
       </div>
 
-      <!-- 湿度 -->
       <div class="bg-white rounded-xl p-6 card-shadow border-t-4 border-info relative">
         <span class="realtime-badge">实时</span>
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-gray-600 font-medium">湿度</h3>
           <i class="fa fa-tint text-info text-xl"></i>
         </div>
-        <div class="text-3xl font-bold text-gray-800 data-value" id="humidity">--%</div>
+        <div class="text-3xl font-bold text-gray-800" id="humidity">--%</div>
       </div>
 
-      <!-- 设备俯角 -->
       <div class="bg-white rounded-xl p-6 card-shadow border-t-4 border-primary relative">
         <span class="realtime-badge">实时</span>
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-gray-600 font-medium">设备俯仰角</h3>
           <i class="fa fa-arrow-up text-primary text-xl"></i>
         </div>
-        <div class="text-3xl font-bold text-gray-800 data-value" id="pitch">--°</div>
+        <div class="text-3xl font-bold text-gray-800" id="pitch">--°</div>
       </div>
       
-      <!-- 设备仰角 -->
       <div class="bg-white rounded-xl p-6 card-shadow border-t-4 border-info relative">
         <span class="realtime-badge">实时</span>
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-gray-600 font-medium">设备翻滚角</h3>
           <i class="fa fa-arrow-down text-info text-xl"></i>
         </div>
-        <div class="text-3xl font-bold text-gray-800 data-value" id="roll">--°</div>
+        <div class="text-3xl font-bold text-gray-800" id="roll">--°</div>
       </div>
 
-
-      <!-- 启动状态 -->
       <div class="bg-white rounded-xl p-6 card-shadow border-t-4 border-secondary relative">
         <span class="realtime-badge">实时</span>
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-gray-600 font-medium">启动状态</h3>
+          <h3 class="text-gray-600 font-medium">运行状态</h3>
           <i class="fa fa-power-off text-secondary text-xl"></i>
         </div>
-        <div class="text-3xl font-bold text-gray-800 data-value" id="status">--</div>
+        <div class="text-3xl font-bold text-gray-800" id="status">--</div>
       </div>
     </div>
   </section>
 
-  <!-- 控制按钮 -->
   <section class="mb-14 section-fade" style="animation-delay: 0.3s">
     <div class="flex items-center mb-6">
       <i class="fa fa-cogs text-primary mr-3 text-xl"></i>
       <h2 class="text-xl font-semibold text-gray-800">设备控制</h2>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <!-- 开关 -->
       <div class="bg-white rounded-xl p-6 card-shadow border-l-4 border-secondary">
         <div class="flex items-center justify-between">
           <div>
             <h3 class="text-gray-700 font-medium flex items-center">
               <i class="fa fa-power-off mr-2 text-secondary"></i> 开关
             </h3>
-            <p class="text-sm text-gray-500" id="deviceSwitchStatus">关闭</p>
+            <p class="text-sm text-gray-500" id="deviceSwitchStatus">加载中...</p>
           </div>
           <div class="btn-toggle off" id="deviceSwitchToggle"></div>
         </div>
       </div>
 
-      <!-- 温度设置 -->
       <div class="bg-white rounded-xl p-6 card-shadow border-l-4 border-warning">
         <div class="flex flex-col items-center justify-center gap-4">
           <h3 class="text-gray-700 font-medium flex items-center">
             <i class="fa fa-thermometer-half mr-2 text-warning"></i> 温度设置
           </h3>
-          <input type="number" id="tempSetInput" min="16" max="30" step="0.5" class="border p-2 rounded text-center w-24">
-          <button id="setTempBtn" class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600">设置温度</button>
+          <input type="number" id="tempSetInput" min="16" max="30" step="0.5" value="24" class="border p-2 rounded text-center w-24">
+          <button id="setTempBtn" class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600 transition-colors">设置温度</button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 历史数据 -->
   <section class="section-fade" style="animation-delay: 0.5s">
     <div class="flex items-center mb-6">
       <i class="fa fa-history text-primary mr-3 text-xl"></i>
       <h2 class="text-xl font-semibold text-gray-800">历史数据分析</h2>
     </div>
-  <div class="flex flex-wrap gap-3 mb-6">
-    <button class="history-tab px-4 py-2 rounded-lg" data-type="temp" data-name="温度" data-unit="°C" data-color="#FF9F43">温度</button>
-    <button class="history-tab px-4 py-2 rounded-lg" data-type="humi" data-name="湿度" data-unit="%" data-color="#4A90E2">湿度</button>
-    <button class="history-tab px-4 py-2 rounded-lg" data-type="pitch" data-name="俯仰角" data-unit="°" data-color="#165DFF">俯仰角</button>
-    <button class="history-tab px-4 py-2 rounded-lg" data-type="roll" data-name="翻滚角" data-unit="°" data-color="#00D1DE">翻滚角</button>
-  </div>
+    <div class="flex flex-wrap gap-3 mb-6">
+      <button class="history-tab px-4 py-2 rounded-lg bg-primary text-white" data-type="temp" data-name="温度" data-unit="°C" data-color="#FF9F43">温度</button>
+      <button class="history-tab px-4 py-2 rounded-lg bg-gray-200 text-gray-700" data-type="humi" data-name="湿度" data-unit="%" data-color="#4A90E2">湿度</button>
+      <button class="history-tab px-4 py-2 rounded-lg bg-gray-200 text-gray-700" data-type="pitch" data-name="俯仰角" data-unit="°" data-color="#165DFF">俯仰角</button>
+      <button class="history-tab px-4 py-2 rounded-lg bg-gray-200 text-gray-700" data-type="roll" data-name="翻滚角" data-unit="°" data-color="#00D1DE">翻滚角</button>
+    </div>
     <div class="bg-white rounded-xl p-6 card-shadow">
-      <div class="flex justify-center items-center" id="historyChartLoader" style="height: 300px;">
+      <div class="flex justify-center items-center" id="historyChartLoader" style="height: 300px; display: none;">
         <div class="text-center">
           <div class="loading-spinner mx-auto mb-2"></div>
           <p class="text-gray-500">加载历史数据中...</p>
         </div>
       </div>
-      <canvas id="historyChart" height="300" style="display: none;"></canvas>
+      <canvas id="historyChart" height="300"></canvas>
     </div>
   </section>
 </main>
@@ -186,17 +172,8 @@
 </footer>
 
 <script>
-const API_CONFIG = {
-  realtime: {
-    url: "https://iot-api.heclouds.com/thingmodel/query-device-property",
-    headers: {
-      "Accept": "application/json, text/plain, */*",
-      "authorization": "version=2022-05-01&res=userid%2F421964&et=1767948185&method=sha1&sign=ldLUMlClVSkDQFj7r%2BhHrRXtp1c%3D"
-    },
-    query: { product_id: "tnOp9vX0Ge", device_name: "test" },
-    updateInterval: 30000
-  }
-};
+// 服务器接口地址
+const SERVER_URL = "https://aiot-icebox.zeabur.app/api";
 
 function updateConnectionStatus(isConnected, message="") {
   const statusElement = document.getElementById("connectionStatus");
@@ -207,20 +184,19 @@ function updateConnectionStatus(isConnected, message="") {
   }
 }
 
-//const SERVER_URL = "http://localhost:3000/api";
-const SERVER_URL = "https://aiot-icebox.zeabur.app/api";
-
 async function fetchRealtimeData(){
   try {
-    updateConnectionStatus(false, "同步中...");
-    const res = await fetch(`${SERVER_URL}/data`); // 改为请求本地
+    const res = await fetch(`${SERVER_URL}/data`);
     const data = await res.json();
     if(data.code === 0 && data.data) {
       updateConnectionStatus(true);
       updateUI(data.data);
+    } else {
+      updateConnectionStatus(false, "后端响应异常");
     }
   } catch(e) {
     updateConnectionStatus(false, "后端连接失败");
+    console.error(e);
   }
 }
 
@@ -228,44 +204,45 @@ function updateUI(dataList){
   const map = {};
   dataList.forEach(item => map[item.identifier] = item.value);
 
-  // 温度
   if(map.temp !== undefined) document.getElementById("temperature").textContent = parseFloat(map.temp).toFixed(1)+"°C";
-  // 湿度
   if(map.humi !== undefined) document.getElementById("humidity").textContent = parseFloat(map.humi).toFixed(0)+"%";
-  // 俯角
   if(map.pitch !== undefined) document.getElementById("pitch").textContent = parseFloat(map.pitch).toFixed(1)+"°";
-  // 仰角
   if(map.roll !== undefined) document.getElementById("roll").textContent = parseFloat(map.roll).toFixed(1)+"°";
 
-  // 开关
   if(map.relay !== undefined){
-    const status = map.relay==0?"开启":"关闭";
-    document.getElementById("status").textContent=status;
+    // 修改逻辑：通常 1 为开启，0 为关闭
+    const isRunning = map.relay == 1;
+    const statusText = isRunning ? "开启" : "关闭";
+    
+    document.getElementById("status").textContent = statusText;
+    document.getElementById("deviceSwitchStatus").textContent = statusText;
+    
     const toggle = document.getElementById("deviceSwitchToggle");
-    const switchStatus = document.getElementById("deviceSwitchStatus");
-    toggle.classList.remove("on","off");
-    if(map.relay==1){
-      toggle.classList.add("on");
-    } else {
-      toggle.classList.add("off");
-    }
-    switchStatus.textContent=status;
+    toggle.classList.remove("on", "off");
+    toggle.classList.add(isRunning ? "on" : "off");
   }
 }
 
 // 控制开关
 document.getElementById("deviceSwitchToggle").addEventListener("click", async ()=>{
   const toggle = document.getElementById("deviceSwitchToggle");
-  const isOn = !toggle.classList.contains("on"); // 获取切换后的期望状态
+  const willBeOn = !toggle.classList.contains("on");
   
   try {
+    updateConnectionStatus(false, "下发指令...");
     const res = await fetch(`${SERVER_URL}/control`, {
       method: "POST",
-      body: JSON.stringify({ relay: isOn ? 1 : 0 })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ relay: willBeOn ? 1 : 0 })
     });
     const result = await res.json();
-    if(result.code === 0) fetchRealtimeData(); // 成功后刷新数据
-  } catch(e) { console.error("控制失败", e); }
+    if(result.code === 0) {
+      // 延迟一秒刷新数据，给物理设备上报留时间
+      setTimeout(fetchRealtimeData, 1000); 
+    } else {
+      alert("指令发送失败：" + result.msg);
+    }
+  } catch(e) { alert("网络异常，请稍后重试"); }
 });
 
 // 设置温度
@@ -275,418 +252,78 @@ document.getElementById("setTempBtn").addEventListener("click", async ()=>{
     try {
       const res = await fetch(`${SERVER_URL}/control`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ temp: val })
       });
       const result = await res.json();
       if(result.code === 0) alert("温度设置成功");
+      else alert("设置失败: " + result.msg);
     } catch(e) { alert("设置失败"); }
-  } else alert("请输入16~30°C");
+  } else alert("请输入16~30°C之间的数值");
 });
 
 let historyChart = null;
-function initHistoryChart(labels,data,label,color){
+function initHistoryChart(labels, data, label, color){
   const ctx = document.getElementById("historyChart").getContext("2d");
   if(historyChart) historyChart.destroy();
-  historyChart = new Chart(ctx,{
-    type:"line",
-    data:{ labels:labels, datasets:[{label:label,data:data,borderColor:color,backgroundColor:color+"33",fill:true,tension:0.4,pointBackgroundColor:color,pointRadius:4}] },
-    options:{ responsive:true, maintainAspectRatio:false }
-  });
-  document.getElementById("historyChartLoader").style.display="none";
-  document.getElementById("historyChart").style.display="block";
-}
-
-// 历史数据切换（模拟）
-document.querySelectorAll(".history-tab").forEach(tab => {
-  tab.addEventListener("click", async () => {
-    // 1. 切换按钮样式
-    document.querySelectorAll(".history-tab").forEach(t => { 
-        t.classList.remove("bg-primary", "text-white"); 
-        t.classList.add("bg-gray-200", "text-gray-700");
-    });
-    tab.classList.remove("bg-gray-200", "text-gray-700"); 
-    tab.classList.add("bg-primary", "text-white");
-
-    // 2. 获取参数
-    const type = tab.dataset.type; // 对应 html 中的 temp, humi, pitch 等
-    const name = tab.dataset.name;
-    const unit = tab.dataset.unit;
-    const color = tab.dataset.color;
-
-    // 显示加载动画
-    document.getElementById("historyChartLoader").style.display = "flex";
-    document.getElementById("historyChart").style.display = "none";
-
-    try {
-      // 3. 请求后端接口
-      const res = await fetch(`${SERVER_URL}/history?identifier=${type}`);
-      const result = await res.json();
-
-      if (result.code === 0 && result.data.list) {
-        // 4. 解析数据：OneNET返回的是倒序，需要 reverse() 变成时间正序
-        const historyList = result.data.list.reverse();
-        const labels = historyList.map(item => {
-          const d = new Date(item.time);
-          return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
-        });
-        const values = historyList.map(item => parseFloat(item.value));
-
-        // 5. 更新图表
-        initHistoryChart(labels, values, `${name}${unit ? "(" + unit + ")" : ""}`, color);
-      } else {
-        alert("暂无历史记录");
-      }
-    } catch (e) {
-      console.error("加载历史数据失败", e);
-    }
-  });
-});
-
-window.addEventListener("load",()=>{
-  fetchRealtimeData();
-  setInterval(fetchRealtimeData, 30000);
-  setTimeout(()=>{ document.querySelector('.history-tab[data-type="temp"]').click()},500);
-});
-</script>
-</body>
-</html>
-=======
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>移动制冷设备控制</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#165DFF',
-            secondary: '#36B37E',
-            warning: '#FF9F43',
-            danger: '#F55661',
-            info: '#4A90E2',
-            dark: '#2D3748',
-          }
-        }
-      }
-    }
-  </script>
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .card-shadow { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: all 0.3s ease; }
-      .card-shadow:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.12); transform: translateY(-4px); }
-      .btn-toggle { @apply relative w-14 h-7 rounded-full transition-all duration-300 ease-in-out cursor-pointer; }
-      .btn-toggle::after { content: ''; @apply absolute left-1 top-1 w-5 h-5 bg-white rounded-full transition-transform duration-300 ease-in-out shadow-md; }
-      .btn-toggle.on { @apply bg-secondary; }
-      .btn-toggle.on::after { @apply transform translate-x-7; }
-      .btn-toggle.off { @apply bg-gray-300; }
-      .history-tab { @apply transition-all duration-300 ease-in-out cursor-pointer; }
-      .data-value { @apply transition-all duration-1000 ease-out; }
-      .section-fade { @apply opacity-0 translate-y-4 animate-[fadeInUp_0.6s_ease-out_forwards]; }
-      .realtime-badge { @apply absolute top-3 right-3 px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary; }
-      .simulated-badge { @apply absolute top-3 right-3 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-500; }
-      @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
-      @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.6;} }
-      .pulse-animation { animation: pulse 2s infinite; }
-      .loading-spinner { @apply inline-block w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin; }
-    }
-  </style>
-</head>
-<body class="bg-gray-50 text-dark min-h-screen">
-
-<header class="bg-gradient-to-r from-primary to-info shadow-md py-8 relative overflow-hidden">
-  <div class="container mx-auto px-4 relative z-10">
-    <h1 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-white text-center tracking-wide">
-      移动制冷设备控制
-    </h1>
-    <p class="text-blue-100 text-center mt-2 opacity-90">
-      <span id="connectionStatus" class="flex items-center justify-center">
-        <i class="fa fa-circle text-xs mr-1"></i>
-        <span>连接状态：加载中</span>
-      </span>
-    </p>
-  </div>
-</header>
-
-<main class="container mx-auto px-4 py-10">
-  <!-- 实时数据展示 -->
-  <section class="mb-14 section-fade" style="animation-delay: 0.1s">
-    <div class="flex items-center mb-6">
-      <i class="fa fa-dashboard text-primary mr-3 text-xl"></i>
-      <h2 class="text-xl font-semibold text-gray-800">实时数据</h2>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <!-- 温度 -->
-      <div class="bg-white rounded-xl p-6 card-shadow border-t-4 border-warning relative">
-        <span class="realtime-badge">实时</span>
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-gray-600 font-medium">温度</h3>
-          <i class="fa fa-thermometer-half text-warning text-xl"></i>
-        </div>
-        <div class="text-3xl font-bold text-gray-800 data-value" id="temperature">--°C</div>
-      </div>
-
-      <!-- 湿度 -->
-      <div class="bg-white rounded-xl p-6 card-shadow border-t-4 border-info relative">
-        <span class="realtime-badge">实时</span>
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-gray-600 font-medium">湿度</h3>
-          <i class="fa fa-tint text-info text-xl"></i>
-        </div>
-        <div class="text-3xl font-bold text-gray-800 data-value" id="humidity">--%</div>
-      </div>
-
-      <!-- 设备俯角 -->
-      <div class="bg-white rounded-xl p-6 card-shadow border-t-4 border-primary relative">
-        <span class="realtime-badge">实时</span>
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-gray-600 font-medium">设备俯仰角</h3>
-          <i class="fa fa-arrow-up text-primary text-xl"></i>
-        </div>
-        <div class="text-3xl font-bold text-gray-800 data-value" id="pitch">--°</div>
-      </div>
-      
-      <!-- 设备仰角 -->
-      <div class="bg-white rounded-xl p-6 card-shadow border-t-4 border-info relative">
-        <span class="realtime-badge">实时</span>
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-gray-600 font-medium">设备翻滚角</h3>
-          <i class="fa fa-arrow-down text-info text-xl"></i>
-        </div>
-        <div class="text-3xl font-bold text-gray-800 data-value" id="roll">--°</div>
-      </div>
-
-
-      <!-- 启动状态 -->
-      <div class="bg-white rounded-xl p-6 card-shadow border-t-4 border-secondary relative">
-        <span class="realtime-badge">实时</span>
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-gray-600 font-medium">启动状态</h3>
-          <i class="fa fa-power-off text-secondary text-xl"></i>
-        </div>
-        <div class="text-3xl font-bold text-gray-800 data-value" id="status">--</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 控制按钮 -->
-  <section class="mb-14 section-fade" style="animation-delay: 0.3s">
-    <div class="flex items-center mb-6">
-      <i class="fa fa-cogs text-primary mr-3 text-xl"></i>
-      <h2 class="text-xl font-semibold text-gray-800">设备控制</h2>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <!-- 开关 -->
-      <div class="bg-white rounded-xl p-6 card-shadow border-l-4 border-secondary">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-gray-700 font-medium flex items-center">
-              <i class="fa fa-power-off mr-2 text-secondary"></i> 开关
-            </h3>
-            <p class="text-sm text-gray-500" id="deviceSwitchStatus">关闭</p>
-          </div>
-          <div class="btn-toggle off" id="deviceSwitchToggle"></div>
-        </div>
-      </div>
-
-      <!-- 温度设置 -->
-      <div class="bg-white rounded-xl p-6 card-shadow border-l-4 border-warning">
-        <div class="flex flex-col items-center justify-center gap-4">
-          <h3 class="text-gray-700 font-medium flex items-center">
-            <i class="fa fa-thermometer-half mr-2 text-warning"></i> 温度设置
-          </h3>
-          <input type="number" id="tempSetInput" min="16" max="30" step="0.5" class="border p-2 rounded text-center w-24">
-          <button id="setTempBtn" class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600">设置温度</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 历史数据 -->
-  <section class="section-fade" style="animation-delay: 0.5s">
-    <div class="flex items-center mb-6">
-      <i class="fa fa-history text-primary mr-3 text-xl"></i>
-      <h2 class="text-xl font-semibold text-gray-800">历史数据分析</h2>
-    </div>
-  <div class="flex flex-wrap gap-3 mb-6">
-    <button class="history-tab px-4 py-2 rounded-lg" data-type="temp" data-name="温度" data-unit="°C" data-color="#FF9F43">温度</button>
-    <button class="history-tab px-4 py-2 rounded-lg" data-type="humi" data-name="湿度" data-unit="%" data-color="#4A90E2">湿度</button>
-    <button class="history-tab px-4 py-2 rounded-lg" data-type="pitch" data-name="俯仰角" data-unit="°" data-color="#165DFF">俯仰角</button>
-    <button class="history-tab px-4 py-2 rounded-lg" data-type="roll" data-name="翻滚角" data-unit="°" data-color="#00D1DE">翻滚角</button>
-  </div>
-    <div class="bg-white rounded-xl p-6 card-shadow">
-      <div class="flex justify-center items-center" id="historyChartLoader" style="height: 300px;">
-        <div class="text-center">
-          <div class="loading-spinner mx-auto mb-2"></div>
-          <p class="text-gray-500">加载历史数据中...</p>
-        </div>
-      </div>
-      <canvas id="historyChart" height="300" style="display: none;"></canvas>
-    </div>
-  </section>
-</main>
-
-<footer class="bg-gray-800 text-white py-6 mt-12">
-  <div class="container mx-auto px-4 text-center text-sm opacity-75">
-    <p>移动制冷设备控制 &copy; 2025</p>
-  </div>
-</footer>
-
-<script>
-const API_CONFIG = {
-  realtime: {
-    url: "https://iot-api.heclouds.com/thingmodel/query-device-property",
-    headers: {
-      "Accept": "application/json, text/plain, */*",
-      "authorization": "version=2022-05-01&res=userid%2F421964&et=1767948185&method=sha1&sign=ldLUMlClVSkDQFj7r%2BhHrRXtp1c%3D"
+  historyChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: label,
+        data: data,
+        borderColor: color,
+        backgroundColor: color + "33",
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: color,
+        pointRadius: 4
+      }]
     },
-    query: { product_id: "tnOp9vX0Ge", device_name: "test" },
-    updateInterval: 30000
-  }
-};
-
-function updateConnectionStatus(isConnected, message="") {
-  const statusElement = document.getElementById("connectionStatus");
-  if(isConnected){
-    statusElement.innerHTML = '<i class="fa fa-circle text-xs text-green-400 mr-1"></i><span>连接状态：已连接</span>';
-  } else {
-    statusElement.innerHTML = `<i class="fa fa-circle text-xs text-yellow-400 mr-1 pulse-animation"></i><span>连接状态：${message || "连接中"}</span>`;
-  }
-}
-
-//const SERVER_URL = "http://localhost:3000/api";
-const SERVER_URL = "https://aiot-icebox.zeabur.app/api";
-
-async function fetchRealtimeData(){
-  try {
-    updateConnectionStatus(false, "同步中...");
-    const res = await fetch(`${SERVER_URL}/data`); // 改为请求本地
-    const data = await res.json();
-    if(data.code === 0 && data.data) {
-      updateConnectionStatus(true);
-      updateUI(data.data);
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { intersect: false, mode: 'index' }
     }
-  } catch(e) {
-    updateConnectionStatus(false, "后端连接失败");
-  }
-}
-
-function updateUI(dataList){
-  const map = {};
-  dataList.forEach(item => map[item.identifier] = item.value);
-
-  // 温度
-  if(map.temp !== undefined) document.getElementById("temperature").textContent = parseFloat(map.temp).toFixed(1)+"°C";
-  // 湿度
-  if(map.humi !== undefined) document.getElementById("humidity").textContent = parseFloat(map.humi).toFixed(0)+"%";
-  // 俯角
-  if(map.pitch !== undefined) document.getElementById("pitch").textContent = parseFloat(map.pitch).toFixed(1)+"°";
-  // 仰角
-  if(map.roll !== undefined) document.getElementById("roll").textContent = parseFloat(map.roll).toFixed(1)+"°";
-
-  // 开关
-  if(map.relay !== undefined){
-    const status = map.relay==0?"开启":"关闭";
-    document.getElementById("status").textContent=status;
-    const toggle = document.getElementById("deviceSwitchToggle");
-    const switchStatus = document.getElementById("deviceSwitchStatus");
-    toggle.classList.remove("on","off");
-    if(map.relay==1){
-      toggle.classList.add("on");
-    } else {
-      toggle.classList.add("off");
-    }
-    switchStatus.textContent=status;
-  }
-}
-
-// 控制开关
-document.getElementById("deviceSwitchToggle").addEventListener("click", async ()=>{
-  const toggle = document.getElementById("deviceSwitchToggle");
-  const isOn = !toggle.classList.contains("on"); // 获取切换后的期望状态
-  
-  try {
-    const res = await fetch(`${SERVER_URL}/control`, {
-      method: "POST",
-      body: JSON.stringify({ relay: isOn ? 1 : 0 })
-    });
-    const result = await res.json();
-    if(result.code === 0) fetchRealtimeData(); // 成功后刷新数据
-  } catch(e) { console.error("控制失败", e); }
-});
-
-// 设置温度
-document.getElementById("setTempBtn").addEventListener("click", async ()=>{
-  const val = parseFloat(document.getElementById("tempSetInput").value);
-  if(val >= 16 && val <= 30){
-    try {
-      const res = await fetch(`${SERVER_URL}/control`, {
-        method: "POST",
-        body: JSON.stringify({ temp: val })
-      });
-      const result = await res.json();
-      if(result.code === 0) alert("温度设置成功");
-    } catch(e) { alert("设置失败"); }
-  } else alert("请输入16~30°C");
-});
-
-let historyChart = null;
-function initHistoryChart(labels,data,label,color){
-  const ctx = document.getElementById("historyChart").getContext("2d");
-  if(historyChart) historyChart.destroy();
-  historyChart = new Chart(ctx,{
-    type:"line",
-    data:{ labels:labels, datasets:[{label:label,data:data,borderColor:color,backgroundColor:color+"33",fill:true,tension:0.4,pointBackgroundColor:color,pointRadius:4}] },
-    options:{ responsive:true, maintainAspectRatio:false }
   });
-  document.getElementById("historyChartLoader").style.display="none";
-  document.getElementById("historyChart").style.display="block";
+  document.getElementById("historyChartLoader").style.display = "none";
+  document.getElementById("historyChart").style.display = "block";
 }
 
-// 历史数据切换（模拟）
+// 历史数据切换
 document.querySelectorAll(".history-tab").forEach(tab => {
   tab.addEventListener("click", async () => {
-    // 1. 切换按钮样式
     document.querySelectorAll(".history-tab").forEach(t => { 
-        t.classList.remove("bg-primary", "text-white"); 
-        t.classList.add("bg-gray-200", "text-gray-700");
+      t.classList.remove("bg-primary", "text-white"); 
+      t.classList.add("bg-gray-200", "text-gray-700");
     });
     tab.classList.remove("bg-gray-200", "text-gray-700"); 
     tab.classList.add("bg-primary", "text-white");
 
-    // 2. 获取参数
-    const type = tab.dataset.type; // 对应 html 中的 temp, humi, pitch 等
+    const type = tab.dataset.type;
     const name = tab.dataset.name;
     const unit = tab.dataset.unit;
     const color = tab.dataset.color;
 
-    // 显示加载动画
     document.getElementById("historyChartLoader").style.display = "flex";
     document.getElementById("historyChart").style.display = "none";
 
     try {
-      // 3. 请求后端接口
       const res = await fetch(`${SERVER_URL}/history?identifier=${type}`);
       const result = await res.json();
 
-      if (result.code === 0 && result.data.list) {
-        // 4. 解析数据：OneNET返回的是倒序，需要 reverse() 变成时间正序
+      if (result.code === 0 && result.data && result.data.list) {
         const historyList = result.data.list.reverse();
         const labels = historyList.map(item => {
           const d = new Date(item.time);
           return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
         });
         const values = historyList.map(item => parseFloat(item.value));
-
-        // 5. 更新图表
         initHistoryChart(labels, values, `${name}${unit ? "(" + unit + ")" : ""}`, color);
       } else {
-        alert("暂无历史记录");
+        document.getElementById("historyChartLoader").style.display = "none";
+        alert("暂无该项历史记录");
       }
     } catch (e) {
       console.error("加载历史数据失败", e);
@@ -694,12 +331,13 @@ document.querySelectorAll(".history-tab").forEach(tab => {
   });
 });
 
-window.addEventListener("load",()=>{
+window.addEventListener("load", () => {
   fetchRealtimeData();
+  // 每30秒更新一次实时数据
   setInterval(fetchRealtimeData, 30000);
-  setTimeout(()=>{ document.querySelector('.history-tab[data-type="temp"]').click()},500);
+  // 初始加载温度图表
+  document.querySelector('.history-tab[data-type="temp"]').click();
 });
 </script>
 </body>
 </html>
->>>>>>> 40037e1ba26181cfaf1a20c561a46192b10cb39a
