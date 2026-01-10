@@ -344,7 +344,7 @@ document.querySelectorAll(".history-tab").forEach(tab => {
 window.addEventListener("load",()=>{
   fetchRealtimeData();
   setInterval(fetchRealtimeData, 30000);
-  setTimeout(()=>{ document.querySelector('.history-tab[data-type="temperature"]').click()},500);
+  setTimeout(()=>{ document.querySelector('.history-tab[data-type="temp"]').click()},500);
 });
 </script>
 </body>
