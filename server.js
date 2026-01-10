@@ -98,13 +98,18 @@ const server = http.createServer(async (req, res) => {
         }
     }
     // 路由 4: 静态页面托管 (访问根目录时返回 index.html)
-    else if (urlObj.pathname === '/' || urlObj.pathname === '/index.html') {
-        const filePath = path.join(__dirname, 'index.html');
-        fs.readFile(filePath, (err, data) => {
-            if (err) {
-                res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
-                res.end("❌ 找不到 index.html 文件，请确保它在根目录中。");
-                return;
+    else if (urlObj.pathname === '/' || urlObj.pathname === '/login.html') {
+    fs.readFile(path.join(__dirname, 'login.html'), (err, data) => {
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(data || "Login Page Not Found");
+    });
+    }
+    else if (urlObj.pathname === '/index.html') {
+        fs.readFile(path.join(__dirname, 'index.html'), (err, data) => {
+            if (err) { 
+                res.writeHead(302, { 'Location': '/' }); // 如果直接访问 index 报错，跳回登录
+                res.end(); 
+                return; 
             }
             res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
             res.end(data);

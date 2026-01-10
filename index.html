@@ -173,6 +173,7 @@
 
 <script>
 const SERVER_URL = window.location.origin;
+let refreshInterval = null;
 
 function updateConnectionStatus(isConnected, message="") {
   const statusElement = document.getElementById("connectionStatus");
@@ -186,19 +187,17 @@ function updateConnectionStatus(isConnected, message="") {
 async function fetchRealtimeData(){
   try {
     const res = await fetch(`${SERVER_URL}/api/data`);
-    if(!res.ok) throw new Error("HTTP 404/500");
+    if(!res.ok) throw new Error("网络响应错误");
     const data = await res.json();
     
-    // 兼容 OneNET 返回结构：业务成功通常是 code === 0
     if(data.code === 0 && data.data) {
       updateConnectionStatus(true);
       updateUI(data.data);
     } else {
-      updateConnectionStatus(false, data.msg || "后端数据异常");
+      updateConnectionStatus(false, data.msg || "数据异常");
     }
   } catch(e) {
     updateConnectionStatus(false, "后端连接失败");
-    console.error("Fetch Error:", e);
   }
 }
 
@@ -211,55 +210,89 @@ function updateUI(dataList){
   if(map.temp !== undefined) document.getElementById("temperature").textContent = parseFloat(map.temp).toFixed(1)+"°C";
   if(map.humi !== undefined) document.getElementById("humidity").textContent = parseFloat(map.humi).toFixed(0)+"%";
   if(map.pitch !== undefined) document.getElementById("pitch").textContent = parseFloat(map.pitch).toFixed(1)+"°";
-  if(map.roll !== undefined) document.getElementById("roll").textContent = parseFloat(map.roll).toFixed(1)+"°";
-
-  if(map.relay !== undefined){
-    const isRunning = map.relay == 1;
+  
+  // 翻滚角处理
+  if(map.roll !== undefined) {
+    const rollVal = parseFloat(map.roll);
+    document.getElementById("roll").textContent = rollVal.toFixed(1)+"°";
+    
+    //滚转角小于 40 度是开启状态
+    const isRunning = Math.abs(rollVal) < 40; 
     const statusText = isRunning ? "开启" : "关闭";
+    
     document.getElementById("status").textContent = statusText;
     document.getElementById("deviceSwitchStatus").textContent = statusText;
+    
     const toggle = document.getElementById("deviceSwitchToggle");
     toggle.classList.remove("on", "off");
     toggle.classList.add(isRunning ? "on" : "off");
   }
 }
 
-document.getElementById("deviceSwitchToggle").addEventListener("click", async ()=>{
-  const toggle = document.getElementById("deviceSwitchToggle");
-  const willBeOn = !toggle.classList.contains("on");
+// 通用控制函数，增加健壮的 JSON 解析
+async function sendControl(params) {
   try {
     updateConnectionStatus(false, "下发指令...");
     const res = await fetch(`${SERVER_URL}/api/control`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ relay: willBeOn ? 1 : 0 })
+      body: JSON.stringify(params)
     });
-    const result = await res.json();
-    if(res.ok && result.code === 0) {
-      setTimeout(fetchRealtimeData, 1000); 
-    } else {
-      alert("指令发送失败：" + (result.msg || "设备无响应"));
-      updateConnectionStatus(true);
-    }
-  } catch(e) { alert("网络异常"); }
-});
 
-document.getElementById("setTempBtn").addEventListener("click", async ()=>{
-  const val = parseFloat(document.getElementById("tempSetInput").value);
-  if(val >= 16 && val <= 30){
-    try {
-      const res = await fetch(`${SERVER_URL}/api/control`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ temp: val })
-      });
+    const contentType = res.headers.get("content-type");
+    if (res.ok && contentType && contentType.includes("application/json")) {
       const result = await res.json();
-      if(res.ok && result.code === 0) alert("温度设置成功");
-      else alert("设置失败: " + (result.msg || "设备超时"));
-    } catch(e) { alert("网络异常"); }
-  } else alert("请输入16~30°C之间的数值");
+      if (result.code === 0) {
+        setTimeout(fetchRealtimeData, 1000); 
+        return true;
+      }
+    } else if (res.ok) {
+      // 如果返回的是成功但不是 JSON
+      setTimeout(fetchRealtimeData, 1000);
+      return true;
+    }
+    throw new Error("指令响应异常");
+  } catch(e) {
+    alert("操作失败：" + e.message);
+    return false;
+  }
+}
+
+document.getElementById("deviceSwitchToggle").addEventListener("click", () => {
+  const isCurrentlyOn = document.getElementById("deviceSwitchToggle").classList.contains("on");
+  sendControl({ relay: isCurrentlyOn ? 0 : 1 });
 });
 
+document.getElementById("setTempBtn").addEventListener("click", () => {
+  const val = parseFloat(document.getElementById("tempSetInput").value);
+  if(val >= 16 && val <= 30) {
+    sendControl({ temp: val }).then(success => {
+      if(success) alert("温度设置成功");
+    });
+  } else {
+    alert("请输入16~30°C之间的数值");
+  }
+});
+
+// 定时器管理
+function startAutoRefresh() {
+  if (!refreshInterval) {
+    refreshInterval = setInterval(() => {
+      if (!document.hidden) fetchRealtimeData();
+    }, 10000);
+  }
+}
+
+function stopAutoRefresh() {
+  clearInterval(refreshInterval);
+  refreshInterval = null;
+}
+
+document.addEventListener("visibilitychange", () => {
+  document.hidden ? stopAutoRefresh() : (fetchRealtimeData(), startAutoRefresh());
+});
+
+// 历史数据逻辑保持不变
 let historyChart = null;
 function initHistoryChart(labels, data, label, color){
   const ctx = document.getElementById("historyChart").getContext("2d");
@@ -304,18 +337,17 @@ document.querySelectorAll(".history-tab").forEach(tab => {
 
     try {
       const res = await fetch(`${SERVER_URL}/api/history?identifier=${type}`);
-      const result = await res.json();
-      if (res.ok && result.data && result.data.list) {
-        const historyList = result.data.list.reverse();
-        const labels = historyList.map(item => {
-          const d = new Date(item.time);
-          return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
-        });
-        const values = historyList.map(item => parseFloat(item.value));
-        initHistoryChart(labels, values, `${name}${unit ? "(" + unit + ")" : ""}`, color);
-      } else {
-        document.getElementById("historyChartLoader").style.display = "none";
-        alert("暂无该项历史记录");
+      if(res.ok) {
+        const result = await res.json();
+        if (result.data && result.data.list) {
+          const historyList = result.data.list.reverse();
+          const labels = historyList.map(item => {
+            const d = new Date(item.time);
+            return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+          });
+          const values = historyList.map(item => parseFloat(item.value));
+          initHistoryChart(labels, values, `${name}${unit ? "(" + unit + ")" : ""}`, color);
+        }
       }
     } catch (e) { console.error(e); }
   });
@@ -323,7 +355,7 @@ document.querySelectorAll(".history-tab").forEach(tab => {
 
 window.addEventListener("load", () => {
   fetchRealtimeData();
-  setInterval(fetchRealtimeData, 30000);
+  startAutoRefresh();
   document.querySelector('.history-tab[data-type="temp"]').click();
 });
 </script>
