@@ -67,8 +67,27 @@ const server = http.createServer(async (req, res) => {
         });
     }
     // 路由 3: 历史数据
-    else if (req.url.startsWith('/api/history')) {
-        // ... (保持您原有的历史记录逻辑)
+    else if (req.url.startsWith('/api/history') && req.method === 'GET') {
+        try {
+            const urlParams = new URL(req.url, `http://${req.headers.host}`);
+            const identifier = urlParams.searchParams.get('identifier') || 'temp';
+            const token = generateAuthorization();
+            const endTime = Date.now();
+            const startTime = endTime - 24 * 60 * 60 * 1000;
+
+            const historyUrl = `https://iot-api.heclouds.com/thingmodel/query-device-property-history?` + 
+                `product_id=${CONFIG.PRODUCT_ID}&device_name=${CONFIG.DEVICE_NAME}&` +
+                `identifier=${identifier}&start_time=${startTime}&end_time=${endTime}&limit=20`;
+                
+            const response = await fetch(historyUrl, { headers: { 'authorization': token } });
+            const data = await response.json();
+            
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(data));
+        } catch (e) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ code: 500, msg: e.message }));
+        }
     }
     else {
         res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
