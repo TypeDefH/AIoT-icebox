@@ -5,9 +5,7 @@
   "scripts": {
     "start": "node server.js"
   },
-  "dependencies": {
-    "crypto": "^1.0.1"
-  },
+  "dependencies": {}, 
   "engines": {
     "node": ">=18.0.0"
   }
