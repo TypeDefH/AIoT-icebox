@@ -173,7 +173,8 @@
 
 <script>
 // 服务器接口地址
-const SERVER_URL = "https://aiot-icebox.zeabur.app";
+//const SERVER_URL = "https://aiot-icebox.zeabur.app";
+const SERVER_URL = window.location.origin;
 
 function updateConnectionStatus(isConnected, message="") {
   const statusElement = document.getElementById("connectionStatus");
