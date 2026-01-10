@@ -88,7 +88,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 // 【修改 3】：非常重要！适配 Zeabur 的云端端口和监听地址
-const PORT = process.env.PORT || 3000; 
+const PORT = process.env.PORT || 8080; 
 server.listen(PORT, "0.0.0.0", () => {
     console.log(`✅ 服务已启动。监听端口: ${PORT}`);
 });
