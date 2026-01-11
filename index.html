@@ -296,11 +296,12 @@ document.getElementById("ledSwitchToggle").addEventListener("click", function() 
 document.getElementById("setTempBtn").addEventListener("click", () => {
   const val = parseFloat(document.getElementById("tempSetInput").value);
   if(val >= 16 && val <= 30) {
-    sendControl({ temp: val }).then(success => {
-      if(success) alert("温度设置成功");
+    // 关键修改：将参数名由 'temp' 改为 'set_temp'，匹配后端逻辑
+    sendControl({ set_temp: val }).then(success => {
+      if(success) alert("温度设置指令已下发（期望值模式）");
     });
   } else {
-    alert("请输入16~30°C之间的数值");
+    alert("请输入-20~50°C之间的数值");
   }
 });
 
