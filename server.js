@@ -23,6 +23,13 @@ function generateAuthorization() {
     const sign = crypto.createHmac(method, base64Key).update(StringForSignature, 'utf8').digest('base64');
     return `version=${version}&res=${encodeURIComponent(res)}&et=${et}&method=${method}&sign=${encodeURIComponent(sign)}`;
 }
+const oneNetControlUrl = `https://iot-api.heclouds.com/thingmodel/set-device-desired-property`; // 注意接口地址
+// 构造请求体：
+const requestBody = {
+  product_id: CONFIG.PRODUCT_ID,
+  device_name: CONFIG.DEVICE_NAME,
+  params: params // 这里的 params 就是前端传来的 { led: 1 } 或 { temp: 24 }
+};
 
 const server = http.createServer(async (req, res) => {
     // 设置跨域头（CORS）
