@@ -105,7 +105,7 @@ const server = http.createServer(async (req, res) => {
                 identifier: identifier,
                 start_time: startTime,
                 end_time: endTime,
-                limit: 50
+                limit: 75
             });
             const historyUrl = `https://iot-api.heclouds.com/thingmodel/query-device-property-history?${query.toString()}`;
             const response = await fetch(historyUrl, { headers: { 'authorization': token } });

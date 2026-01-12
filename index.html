@@ -145,7 +145,7 @@
           <h3 class="text-gray-700 font-medium flex items-center">
             <i class="fa fa-thermometer-half mr-2 text-warning"></i> 温度设置
           </h3>
-          <input type="number" id="tempSetInput" min="16" max="30" step="0.5" value="24" class="border p-2 rounded text-center w-24">
+          <input type="number" id="tempSetInput" min="-20" max="50" step="0.5" value="24" class="border p-2 rounded text-center w-24">
           <button id="setTempBtn" class="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600 transition-colors">设置温度</button>
         </div>
       </div>
@@ -211,39 +211,40 @@ async function fetchRealtimeData(){
   }
 }
 
-function updateUI(dataList){
+function updateUI(dataList) {
   const map = {};
-  if(Array.isArray(dataList)){
+  if (Array.isArray(dataList)) {
     dataList.forEach(item => map[item.identifier] = item.value);
   }
 
-  // led 制冷灯回显
-  if(map.led !== undefined) {
+  // --- LED 制冷灯状态更新 ---
+  const ledToggle = document.getElementById("ledSwitchToggle");
+  if (map.led !== undefined && ledToggle.dataset.locking !== "true") {
     const isLedOn = parseInt(map.led) === 1;
-    const ledToggle = document.getElementById("ledSwitchToggle");
     ledToggle.classList.remove("on", "off");
     ledToggle.classList.add(isLedOn ? "on" : "off");
   }
 
-  if(map.temp !== undefined) document.getElementById("temperature").textContent = parseFloat(map.temp).toFixed(1)+"°C";
-  if(map.humi !== undefined) document.getElementById("humidity").textContent = parseFloat(map.humi).toFixed(0)+"%";
-  if(map.pitch !== undefined) document.getElementById("pitch").textContent = parseFloat(map.pitch).toFixed(1)+"°";
-  
-  // 翻滚角处理
-  if(map.roll !== undefined) {
-    const rollVal = parseFloat(map.roll);
-    document.getElementById("roll").textContent = rollVal.toFixed(1)+"°";
-    
-    //滚转角小于 40 度是开启状态
-    const isRunning = Math.abs(rollVal) < 40; 
-    const statusText = isRunning ? "开启" : "关闭";
+  // --- 传感器数据更新 ---
+  if(map.temp !== undefined) document.getElementById("temperature").textContent = parseFloat(map.temp).toFixed(1) + "°C";
+  if(map.humi !== undefined) document.getElementById("humidity").textContent = parseFloat(map.humi).toFixed(0) + "%";
+  if(map.pitch !== undefined) document.getElementById("pitch").textContent = parseFloat(map.pitch).toFixed(1) + "°";
+  if(map.roll !== undefined) document.getElementById("roll").textContent = parseFloat(map.roll).toFixed(1) + "°";
+
+  // --- 设备运行状态更新 (基于 relay 标识符) ---
+  if (map.relay !== undefined) {
+    const isRelayOn = parseInt(map.relay) === 1;
+    const statusText = isRelayOn ? "开启" : "关闭";
     
     document.getElementById("status").textContent = statusText;
     document.getElementById("deviceSwitchStatus").textContent = statusText;
     
     const toggle = document.getElementById("deviceSwitchToggle");
-    toggle.classList.remove("on", "off");
-    toggle.classList.add(isRunning ? "on" : "off");
+    // 只有在非锁定状态下才根据后端数据更新 UI
+    if (toggle.dataset.locking !== "true") {
+      toggle.classList.remove("on", "off");
+      toggle.classList.add(isRelayOn ? "on" : "off");
+    }
   }
 }
 
@@ -276,29 +277,39 @@ async function sendControl(params) {
   }
 }
 
-document.getElementById("deviceSwitchToggle").addEventListener("click", () => {
-  const isCurrentlyOn = document.getElementById("deviceSwitchToggle").classList.contains("on");
-  sendControl({ relay: isCurrentlyOn ? 0 : 1 });
+document.getElementById("deviceSwitchToggle").addEventListener("click", function() {
+  const isCurrentlyOn = this.classList.contains("on");
+  const nextStatus = isCurrentlyOn ? 0 : 1;
+
+  this.classList.toggle('on');
+  this.classList.toggle('off');
+  sendControl({ relay: nextStatus });
+  this.dataset.locking = "true";
+  setTimeout(() => {
+    this.dataset.locking = "false";
+  }, 11000); 
 });
 
 document.getElementById("ledSwitchToggle").addEventListener("click", function() {
   const isCurrentlyOn = this.classList.contains("on");
   const nextStatus = isCurrentlyOn ? 0 : 1;
-  
+  this.classList.toggle('on');
+  this.classList.toggle('off');
   // 调用 API，发送 led 参数
   sendControl({ led: nextStatus });
   
-  // 乐观 UI 更新：先切换样式，等 1 秒后再刷真实数据
-  this.classList.toggle('on');
-  this.classList.toggle('off');
+  this.dataset.locking = "true";
+  setTimeout(() => {
+    this.dataset.locking = "false";
+  }, 11000);
 });
 
 document.getElementById("setTempBtn").addEventListener("click", () => {
   const val = parseFloat(document.getElementById("tempSetInput").value);
-  if(val >= 16 && val <= 30) {
+  if(val >= -20 && val <= 50) {
     // 关键修改：将参数名由 'temp' 改为 'set_temp'，匹配后端逻辑
     sendControl({ set_temp: val }).then(success => {
-      if(success) alert("温度设置指令已下发（期望值模式）");
+      if(success) alert("温度设置指令已下发");
     });
   } else {
     alert("请输入-20~50°C之间的数值");
@@ -371,16 +382,36 @@ document.querySelectorAll(".history-tab").forEach(tab => {
       if(res.ok) {
         const result = await res.json();
         if (result.data && result.data.list) {
-          const historyList = result.data.list.reverse();
-          const labels = historyList.map(item => {
+          const rawList = result.data.list; // OneNET 原始数据（最新在前）
+          const historyList = [];
+          const INTERVAL = 3 * 60 * 1000;   // 3分钟间隔
+          const MAX_POINTS = 20;           // 最多20个点
+
+          if (rawList.length > 0) {
+            historyList.push(rawList[0]);  // 取最新的点
+            let lastTime = rawList[0].time;
+
+            for (let i = 1; i < rawList.length; i++) {
+              if (lastTime - rawList[i].time >= INTERVAL) {
+                historyList.push(rawList[i]);
+                lastTime = rawList[i].time;
+              }
+              if (historyList.length >= MAX_POINTS) break;
+            }
+          }
+
+          const finalDisplayList = historyList.reverse(); // 反转以符合时间轴习惯
+          const labels = finalDisplayList.map(item => {
             const d = new Date(item.time);
             return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
           });
-          const values = historyList.map(item => parseFloat(item.value));
+          const values = finalDisplayList.map(item => parseFloat(item.value));
           initHistoryChart(labels, values, `${name}${unit ? "(" + unit + ")" : ""}`, color);
         }
       }
-    } catch (e) { console.error(e); }
+} catch (e) {
+      console.error(e);
+    }
   });
 });
 
